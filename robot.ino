@@ -27,20 +27,21 @@ Servo servo;
 void setup()
 {
   Serial.begin(9600);
-  Serial.println("Startup !");
+  Serial.println("Start in progress...");
   
-  //pin moteur droit
+  //Pin moteur droit
   pinMode(dirMotoD, OUTPUT);
   pinMode(vitMotoD, OUTPUT);
   
-  //pin moteur gauche
+  //Pin moteur gauche
   pinMode(dirMotoG, OUTPUT);
   pinMode(vitMotoG, OUTPUT);
   
-  //pin servo moteur
+  //Pin servo moteur + Initialisation 
   servo.attach(servoPin);
+  servo.write(90);
 
-  //pin capteur ultrason
+  //Pin capteur ultrason
   pinMode(ultraTrig, OUTPUT);
   pinMode(ultraEcho, INPUT);
 
@@ -49,10 +50,13 @@ void setup()
 
 void loop()
 {
+  // Démarrage 
   servo.write(90); delay(2000);
   avancer(vitesseMoto);
+  // Vérification d'un obstacle Devant 
   while(distance()>12 or distance() == 0);
   stop();
+  // Vérification d'un obstacle a Droite
   servo.write(0); delay(2000);
   if(distance()>20 or distance() == 0)
   {
@@ -61,6 +65,7 @@ void loop()
   }
   else
   {
+  // Vérification d'un obstacle a Gauche 
     servo.write(180); delay(2000);
     if(distance()>20 or distance() == 0)
      {
@@ -69,12 +74,16 @@ void loop()
    }
    else
    {
+  // Fait demi-tour si il y a un obstacle a Droite et a Gauche
     Serial.println("Fait Demi-tour !");
     gauche(vitesseMoto); delay(tempQuartTour*2);
     stop(); 
    }
   }
 }
+
+
+// Toutes les fonctions suivantes sont celle qui controle les équipements du robots.
 
 void reculer(int vitesse)
 {
@@ -146,18 +155,18 @@ void stop()
 
 float distance() {
   Serial.println("Mesure la Distance");
-
+// Initialisation du capteur ultrason 
   float varDistance;
   digitalWrite(ultraTrig, LOW);
   delayMicroseconds(5);
-
+// Envoie une impulsion sonore pour connaitre la distance avec un potentiel objet 
   digitalWrite(ultraTrig, HIGH);
   delayMicroseconds(10);
   digitalWrite(ultraTrig, LOW);
-
+// Récupération des données puis calcule de la distance 
   float duration = pulseIn(ultraEcho, HIGH, 3000);
-  varDistance = duration * 0.034 / 2;
-  
+  varDistance = duration * 0.034 / 2; // La division par 2 est présente car l'onde fait un aller retour 
+// Retourne la distance dans le programme 
   Serial.println(varDistance);
   return(varDistance);
 }
